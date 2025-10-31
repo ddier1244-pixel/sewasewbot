@@ -80,7 +80,7 @@ def index():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     # Make sure you set the webhook before starting
-    webhook_url = f"https://your-render-app-url.onrender.com/{TELEGRAM_TOKEN}"
+    webhook_url = f"https://sewasewbot.onrender.com/{TELEGRAM_TOKEN}"
     bot.delete_webhook()
     bot.set_webhook(webhook_url)
     logger.info(f"Webhook set to: {webhook_url}")
