@@ -2,7 +2,7 @@ import os
 import logging
 from flask import Flask, request
 from telegram import Bot, Update
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import CommandHandler, MessageHandler, filters, ContextTypes, ApplicationBuilder 
 
 # ==== CONFIG ====
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "8361243003:AAF3PyAyY5cdSUzh2VJyDy-TWjZ2Ionv4x8")
@@ -11,9 +11,10 @@ ADMIN_CHAT_ID = int(os.environ.get("ADMIN_CHAT_ID", "5400588836"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==== BOT SETUP ====
-bot = Bot(TELEGRAM_TOKEN)
-dispatcher = Dispatcher(bot, None, workers=0)
+# ==== BOT SETUP ==== 
+
+app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
 
 # ==== HANDLERS ====
 
@@ -59,9 +60,10 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # ==== REGISTER HANDLERS ====
-dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(MessageHandler(filters.PHOTO, photo_handler))
-dispatcher.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.PHOTO, photo_handler))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+
 
 # ==== FLASK APP ====
 app = Flask(__name__)
@@ -78,10 +80,9 @@ def index():
 
 # ==== MAIN ====
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
     # Make sure you set the webhook before starting
-    webhook_url = f"https://sewasewbot.onrender.com/{TELEGRAM_TOKEN}"
-    bot.delete_webhook()
-    bot.set_webhook(webhook_url)
-    logger.info(f"Webhook set to: {webhook_url}")
-    app.run(host="0.0.0.0", port=port)
+    app.run_webhook(listen="0.0.0.0",
+                port=int(os.environ.get("PORT", 5000)),
+                url_path=TELEGRAM_TOKEN,
+                webhook_url=f"https://sewasewbot.onrender.com/{TELEGRAM_TOKEN}")
+
